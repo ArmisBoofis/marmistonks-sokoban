@@ -10,7 +10,8 @@ from constants import (BACKGROUND_TEXTURES_PATH, CHARACTER,
                        CHARACTER_DIRECTIONS, CHARACTERS_INFO, CRATE,
                        GAME_BUTTONS_HEIGHT, GAME_BUTTONS_WIDTH,
                        GAME_BUTTONS_Y_MARGIN, RED_CRATE, TILE_SIZE, TROPHY,
-                       WINDOW_SIZE, WINDOW_TILE_SIZE, CHARACTER_DIRECTIONS_OPPOSITE)
+                       WINDOW_SIZE, WINDOW_TILE_SIZE, CHARACTER_DIRECTIONS_OPPOSITE,
+                       UI_FONT_PATH, UI_TEXT_COLOR)
 from user_interface import Button
 
 
@@ -138,7 +139,8 @@ class BackgroundManager(pygame.sprite.Sprite):
 class Character(pygame.sprite.Sprite):
     """Class managing the character in the game"""
     def __init__(self, column, row, character_id):
-        """Constructor mathod. It initializes the character depending on the given <character_id>"""
+        """Constructor mathod. It initializes the character
+        depending on the given <character_id>"""
 
         # We first call the parent constructor
         pygame.sprite.Sprite.__init__(self)
@@ -248,6 +250,10 @@ class Character(pygame.sprite.Sprite):
                 # We store the move in the queue
                 move_queue.append((self.direction, crate_collision))
 
+            return True
+
+        return False
+
 class Crate(pygame.sprite.Sprite):
     """Class managing a crate in the game."""
 
@@ -277,7 +283,7 @@ class Crate(pygame.sprite.Sprite):
         # Displayed image of the crate
         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         self.image.blit(Crate.regular_crate_texture, (0, 0))
-    
+
     def change_coords(self, next_column, next_row, trophies):
         """Method changing the coordinates of the crate."""
 
@@ -338,6 +344,12 @@ class GameManager():
         # Stack storing the moves of the character
         self.move_queue = collections.deque()
 
+        # Font used to display the move count
+        self.text_font = pygame.font.Font(UI_FONT_PATH, 3 * TILE_SIZE // 4)
+
+        # We create the image for the move count by updating it for the first time
+        self.update_move_count_image()
+
         # Initialization of the buttons available in-game
         self.back_to_menu_button = Button(
             WINDOW_SIZE[0] / 4 - GAME_BUTTONS_WIDTH / 2,
@@ -361,6 +373,15 @@ class GameManager():
             GAME_BUTTONS_WIDTH,
             GAME_BUTTONS_HEIGHT,
             'Annuler'
+        )
+
+    def update_move_count_image(self):
+        """Method updating the image of the move count"""
+
+        self.move_count_image = self.text_font.render(
+            'Déplacements: {}'.format(len(self.move_queue)),
+            True,
+            UI_TEXT_COLOR
         )
 
     def parse(self, level_filename, character_id):
@@ -405,13 +426,14 @@ class GameManager():
 
                 # If an arrow key is pressed, then we move the character
                 if event.type == pygame.KEYDOWN and event.key in arrow_keys:
-                    self.character.update(
+                    if self.character.update(
                         event.key,
                         self.background.background_map,
                         self.crates,
                         self.background.initial_trophies,
                         self.move_queue
-                    )
+                    ):
+                        self.update_move_count_image()
 
                 # If the mouse moves, we have to update the buttons
                 if event.type == pygame.MOUSEMOTION:
@@ -431,7 +453,7 @@ class GameManager():
                         if len(self.move_queue) > 0:
                             last_move = self.move_queue.pop()
 
-                            self.character.update(
+                            if self.character.update(
                                 last_move[0],
                                 self.background.background_map,
                                 self.crates,
@@ -439,13 +461,17 @@ class GameManager():
                                 self.move_queue,
                                 True,
                                 last_move[1]
-                            )
+                            ):
+                                self.update_move_count_image()
 
                     # If the user clicks on the 'clear' button,
                     # we restart the level as it was initially
                     elif self.clear_button.collides(mouse_position[0], mouse_position[1]):
                         # We clear the history of moves
                         self.move_queue.clear()
+
+                        # We update the move count
+                        self.update_move_count_image()
 
                         # We reset the crates to their initial positions
                         for index in range(len(self.crates)):
@@ -477,6 +503,12 @@ class GameManager():
             self.back_to_menu_button.draw(self.screen)
             self.clear_button.draw(self.screen)
             self.back_button.draw(self.screen)
+
+            # Displaying the move count
+            self.screen.blit(
+                self.move_count_image,
+                (10, 0)
+            )
 
             # Updating the screen
             pygame.display.flip()
