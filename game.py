@@ -171,6 +171,24 @@ class Character(pygame.sprite.Sprite):
         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         self.image.blit(self.textures, (0, 0), source_rect)
 
+    def change_coords(self, next_column, next_row):
+        """Method changing the coordinates of the character."""
+        self.column, self.row = next_column, next_row
+
+        # We update the coordinates of the character
+        self.rect.x = self.column * TILE_SIZE + (TILE_SIZE - self.rect.width) // 2
+        self.rect.y = self.row * TILE_SIZE  + (TILE_SIZE - self.rect.height) // 2
+
+        # Rectangle defining the portion of the textures that we will display
+        source_rect = pygame.Rect(
+            self.rect.width * CHARACTER_DIRECTIONS[self.direction]['texture_pos'], 0,
+            self.rect.width, self.rect.height
+        )
+
+        # Finally, we update the displayed image of the character
+        self.image.fill(pygame.Color(0, 0, 0, 0))
+        self.image.blit(self.textures, (0, 0), source_rect)
+
     def update(
             self,
             direction,
@@ -223,21 +241,8 @@ class Character(pygame.sprite.Sprite):
 
         # We check if the next tile is an empty one
         if not level_tile_map[next_row][next_column] and collision_ok:
-            self.column, self.row = next_column, next_row
-
-            # We update the coordinates of the character
-            self.rect.x = self.column * TILE_SIZE + (TILE_SIZE - self.rect.width) // 2
-            self.rect.y = self.row * TILE_SIZE  + (TILE_SIZE - self.rect.height) // 2
-
-            # Rectangle defining the portion of the textures that we will display
-            source_rect = pygame.Rect(
-                self.rect.width * CHARACTER_DIRECTIONS[self.direction]['texture_pos'], 0,
-                self.rect.width, self.rect.height
-            )
-
-            # Finally, we update the displayed image of the character
-            self.image.fill(pygame.Color(0, 0, 0, 0))
-            self.image.blit(self.textures, (0, 0), source_rect)
+            # We change the coordinates of the character
+            self.change_coords(next_column, next_row)
 
             if not reverse:
                 # We store the move in the queue
@@ -272,6 +277,23 @@ class Crate(pygame.sprite.Sprite):
         # Displayed image of the crate
         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         self.image.blit(Crate.regular_crate_texture, (0, 0))
+    
+    def change_coords(self, next_column, next_row, trophies):
+        """Method changing the coordinates of the crate."""
+
+        # We edit the map coordinates of the crate
+        self.column, self.row = next_column, next_row
+
+        # Then, we edit the real coordinates of the crate
+        self.rect.x = self.column * TILE_SIZE
+        self.rect.y = self.row * TILE_SIZE
+
+        # If the crate is on a trophy, then it becomes red
+        if (self.column, self.row) in trophies:
+            self.image.blit(Crate.red_crate_texture, (0, 0))
+
+        else:
+            self.image.blit(Crate.regular_crate_texture, (0, 0))
 
     def update(self, direction, level_tile_map, crates, trophies):
         """Method moving the crate with the given <direction> parameter.
@@ -288,19 +310,8 @@ class Crate(pygame.sprite.Sprite):
 
         # We check if the next tile is an empty one, and return if the move succeeds
         if not level_tile_map[next_row][next_column]:
-            # We edit the map coordinates of the crate
-            self.column, self.row = next_column, next_row
-
-            # Then, we edit the real coordinates of the crate
-            self.rect.x = self.column * TILE_SIZE
-            self.rect.y = self.row * TILE_SIZE
-
-            # If the crate is on a trophy, then it becomes red
-            if (self.column, self.row) in trophies:
-                self.image.blit(Crate.red_crate_texture, (0, 0))
-
-            else:
-                self.image.blit(Crate.regular_crate_texture, (0, 0))
+            # We change the coordinates of the crate
+            self.change_coords(next_column, next_row, trophies)
 
             return True
 
@@ -429,6 +440,26 @@ class GameManager():
                                 True,
                                 last_move[1]
                             )
+
+                    # If the user clicks on the 'clear' button,
+                    # we restart the level as it was initially
+                    elif self.clear_button.collides(mouse_position[0], mouse_position[1]):
+                        # We clear the history of moves
+                        self.move_queue.clear()
+
+                        # We reset the crates to their initial positions
+                        for index in range(len(self.crates)):
+                            self.crates[index].change_coords(
+                                self.background.initial_crates[index][0],
+                                self.background.initial_crates[index][1],
+                                self.background.initial_trophies
+                            )
+
+                        # Finally, we reset the position of the character
+                        self.character.change_coords(
+                            self.background.initial_character_coords[0],
+                            self.background.initial_character_coords[1]
+                        )
 
             # Drawing the different components of the game
             self.background_group.draw(self.screen)
