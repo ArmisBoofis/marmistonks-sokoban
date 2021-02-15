@@ -30,7 +30,7 @@ if __name__ == '__main__':
             view = main_menu.mainloop()
 
         elif view == GAME_VIEW:
-            game.parse('level_10.txt', 0)
+            game.parse('level_5.txt', 0)
             game.mainloop()
 
     pygame.quit()

@@ -68,6 +68,14 @@ CHARACTER_DIRECTIONS = {
     }
 }
 
+# Dictionary describing each movement and its opposite
+CHARACTER_DIRECTIONS_OPPOSITE = {
+    pygame.K_DOWN: pygame.K_UP,
+    pygame.K_UP: pygame.K_DOWN,
+    pygame.K_LEFT: pygame.K_RIGHT,
+    pygame.K_RIGHT: pygame.K_LEFT
+}
+
 ############################## Game ################################
 
 # Size of the buttons displayed in the game

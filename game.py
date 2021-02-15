@@ -3,13 +3,16 @@ This module contains the different classes
 which manage the game itself.
 """
 
+import collections
 import sys
 import pygame
+from constants import (BACKGROUND_TEXTURES_PATH, CHARACTER,
+                       CHARACTER_DIRECTIONS, CHARACTERS_INFO, CRATE,
+                       GAME_BUTTONS_HEIGHT, GAME_BUTTONS_WIDTH,
+                       GAME_BUTTONS_Y_MARGIN, RED_CRATE, TILE_SIZE, TROPHY,
+                       WINDOW_SIZE, WINDOW_TILE_SIZE, CHARACTER_DIRECTIONS_OPPOSITE)
 from user_interface import Button
-from constants import (BACKGROUND_TEXTURES_PATH, CRATE, TILE_SIZE, RED_CRATE,
-                       TROPHY, WINDOW_SIZE, WINDOW_TILE_SIZE, CHARACTER, CHARACTERS_INFO,
-                       CHARACTER_DIRECTIONS, GAME_BUTTONS_HEIGHT, GAME_BUTTONS_WIDTH,
-                       GAME_BUTTONS_Y_MARGIN)
+
 
 def load_background_texture(tile_code):
     """Utility function loading the texture of
@@ -44,8 +47,8 @@ class BackgroundManager(pygame.sprite.Sprite):
         # Initial coordinates of the crates and trophies on the map
         self.initial_crates, self.initial_trophies = [], []
 
-        # Codes of the tiles of the initial map
-        self.initial_map = []
+        # Codes of the tiles of the background map
+        self.background_map = []
 
         # Image of the background
         self.image = pygame.Surface(WINDOW_SIZE)
@@ -55,7 +58,7 @@ class BackgroundManager(pygame.sprite.Sprite):
         """Method parsing the background image from a level file."""
 
         # We reset the different attributes, so that the user can call this method multiple times
-        self.initial_crates, self.initial_trophies, self.initial_map = [], [], []
+        self.initial_crates, self.initial_trophies, self.background_map = [], [], []
 
         # Variable containing the textures used for the background image
         background_textures = pygame.image.load(BACKGROUND_TEXTURES_PATH).convert()
@@ -88,13 +91,13 @@ class BackgroundManager(pygame.sprite.Sprite):
                     error = True
                     break
 
-                self.initial_map.append(tile_codes)
+                self.background_map.append(tile_codes)
 
         # If an error occured, or if the number of lines is not valid, we return False
-        if error or len(self.initial_map) != WINDOW_TILE_SIZE:
+        if error or len(self.background_map) != WINDOW_TILE_SIZE:
             return False
 
-        # Now we create the background image from the <initial_map> variable
+        # Now we create the background image from the <background_map> variable
         for row in range(WINDOW_TILE_SIZE):
             for column in range(WINDOW_TILE_SIZE):
                 # Variable containing the code of the tile we will finally display
@@ -103,21 +106,21 @@ class BackgroundManager(pygame.sprite.Sprite):
                 # If the tile code corresponds to a crate or a trophy,
                 # we do not want to add it to the background.
                 # Instead, we store its coordinates for later use
-                if self.initial_map[row][column] == CRATE:
+                if self.background_map[row][column] == CRATE:
                     self.initial_crates.append((column, row))
 
-                elif self.initial_map[row][column] == TROPHY:
+                elif self.background_map[row][column] == TROPHY:
                     self.initial_trophies.append((column, row))
 
-                elif self.initial_map[row][column] == CHARACTER:
+                elif self.background_map[row][column] == CHARACTER:
                     self.initial_character_coords = (column, row)
 
                 else:
-                    displayed_tile = self.initial_map[row][column]
+                    displayed_tile = self.background_map[row][column]
 
-                # We erase the crates, trophies, and character from the <initial_map> variable
+                # We erase the crates, trophies, and character from the <background_map> variable
                 # (we have already stored their coordinates in other variables)
-                self.initial_map[row][column] = displayed_tile
+                self.background_map[row][column] = displayed_tile
 
                 # Coordinates of the tile in the background
                 dest_coord = (column * TILE_SIZE, row * TILE_SIZE)
@@ -168,25 +171,55 @@ class Character(pygame.sprite.Sprite):
         self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
         self.image.blit(self.textures, (0, 0), source_rect)
 
-    def update(self, direction, level_tile_map, crates, trophies):
+    def update(
+            self,
+            direction,
+            level_tile_map,
+            crates, trophies,
+            move_queue,
+            reverse=False,
+            with_crate=False
+        ):
         """Method moving the character with the given <direction> parameter.
         It also requires the <level_tile_map>, <crates> and <trophies>
-        parameters, for collisions."""
+        parameters, for collisions. The <move_queue> parameter is usefull
+        for storing the moves of the character. The <reversed> and <with_crate>
+        parameters are used when the move is backward."""
 
         # First, we set up the new direction
         self.direction = direction
 
-        # Then we compute the next coordinates
-        next_column = self.column + CHARACTER_DIRECTIONS[self.direction]['dx']
-        next_row = self.row + CHARACTER_DIRECTIONS[self.direction]['dy']
+        # Then we compute the next coordinates, taking in account the <reverse> parameter
+        direction_coeff = -1 if reverse else 1
+
+        next_column = self.column + direction_coeff * CHARACTER_DIRECTIONS[self.direction]['dx']
+        next_row = self.row + direction_coeff * CHARACTER_DIRECTIONS[self.direction]['dy']
 
         # Variable which saves if the collisions with the crates are not problematic
-        collision_ok = True
+        collision_ok, crate_collision = True, False
 
-        # We check for the collision with any crate
-        for crate in crates:
-            if crate.column == next_column and crate.row == next_row:
-                collision_ok = crate.update(direction, level_tile_map, crates, trophies)
+        if reverse:
+            if with_crate:
+                # We have to move the crate that was previously moved
+                # These are the coordinates of the character if the move was forward
+                column_forward = self.column + CHARACTER_DIRECTIONS[self.direction]['dx']
+                row_forward = self.row + CHARACTER_DIRECTIONS[self.direction]['dy']
+
+                for crate in crates:
+                    if crate.column == column_forward and crate.row == row_forward:
+                        crate.update(
+                            CHARACTER_DIRECTIONS_OPPOSITE[direction],
+                            level_tile_map,
+                            crates,
+                            trophies
+                        )
+
+        else:
+            # We check for the collision with any crate
+            for crate in crates:
+                if crate.column == next_column and crate.row == next_row:
+                    collision_ok = crate.update(direction, level_tile_map, crates, trophies)
+                    crate_collision = True
 
         # We check if the next tile is an empty one
         if not level_tile_map[next_row][next_column] and collision_ok:
@@ -205,6 +238,10 @@ class Character(pygame.sprite.Sprite):
             # Finally, we update the displayed image of the character
             self.image.fill(pygame.Color(0, 0, 0, 0))
             self.image.blit(self.textures, (0, 0), source_rect)
+
+            if not reverse:
+                # We store the move in the queue
+                move_queue.append((self.direction, crate_collision))
 
 class Crate(pygame.sprite.Sprite):
     """Class managing a crate in the game."""
@@ -287,6 +324,9 @@ class GameManager():
         Crate.load_textures()
         self.trophy_texture = load_background_texture(TROPHY)
 
+        # Stack storing the moves of the character
+        self.move_queue = collections.deque()
+
         # Initialization of the buttons available in-game
         self.back_to_menu_button = Button(
             WINDOW_SIZE[0] / 4 - GAME_BUTTONS_WIDTH / 2,
@@ -356,9 +396,10 @@ class GameManager():
                 if event.type == pygame.KEYDOWN and event.key in arrow_keys:
                     self.character.update(
                         event.key,
-                        self.background.initial_map,
+                        self.background.background_map,
                         self.crates,
-                        self.background.initial_trophies
+                        self.background.initial_trophies,
+                        self.move_queue
                     )
 
                 # If the mouse moves, we have to update the buttons
@@ -368,6 +409,26 @@ class GameManager():
                     self.back_to_menu_button.on_mouse_move(mouse_position[0], mouse_position[1])
                     self.clear_button.on_mouse_move(mouse_position[0], mouse_position[1])
                     self.back_button.on_mouse_move(mouse_position[0], mouse_position[1])
+
+                # If the mouse is clicked, we have to check for all the buttons
+                if event.type == pygame.MOUSEBUTTONUP:
+                    mouse_position = pygame.mouse.get_pos()
+
+                    # If the user clicks on the 'back' button,
+                    # we have to move the character accordingly.
+                    if self.back_button.collides(mouse_position[0], mouse_position[1]):
+                        if len(self.move_queue) > 0:
+                            last_move = self.move_queue.pop()
+
+                            self.character.update(
+                                last_move[0],
+                                self.background.background_map,
+                                self.crates,
+                                self.background.initial_trophies,
+                                self.move_queue,
+                                True,
+                                last_move[1]
+                            )
 
             # Drawing the different components of the game
             self.background_group.draw(self.screen)
