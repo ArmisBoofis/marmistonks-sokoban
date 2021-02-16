@@ -7,21 +7,21 @@ import pygame
 from constants import (UI_FONT_PATH, UI_TEXT_COLOR, UI_BACKGROUND_COLOR,
                        UI_TEXT_PROPORTION, UI_HOVER_COLOR, UI_HOVER_ALPHA_VALUE)
 
-class Button():
+class Button(pygame.sprite.Sprite):
     """Class defining a button"""
 
     def __init__(self, x, y, width, height, text):
         """Constructor method. <x> and <y> are the coordinates
         of the button, and <text> the text displayed in it."""
 
-        # Coordinates and size of the button
-        self.x_value, self.y_value, self.width, self.height = x, y, width, height
+        # Call to the parent constructor
+        pygame.sprite.Sprite.__init__(self)
 
-        # Attribute storing the current state of the button (hovered or not)
-        self.hovered = False
+        # Rect (coordinates and dimensions) of the button
+        self.rect = pygame.Rect(x, y, width, height)
 
         # Font used to display the text (we make the text slighlty smaller than the button)
-        text_font = pygame.font.Font(UI_FONT_PATH, int(self.height * UI_TEXT_PROPORTION))
+        text_font = pygame.font.Font(UI_FONT_PATH, int(self.rect.height * UI_TEXT_PROPORTION))
 
         # Size of the rendered text
         (text_width, text_height) = text_font.size(text)
@@ -33,55 +33,46 @@ class Button():
             UI_TEXT_COLOR
         )
 
-        # Final image of the Button
-        self.image = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
+        # Basic image of the button (without the hover effect)
+        self.image_base = pygame.Surface(self.rect.size, pygame.SRCALPHA)
 
         # We first draw the background rectangle on it
         pygame.draw.rect(
-            self.image,
+            self.image_base,
             UI_BACKGROUND_COLOR,
             pygame.Rect(0, 0, self.width, self.height)
         )
 
         # Finally, we blit the text on the image of the button
-        self.image.blit(
+        self.image_base.blit(
             text_image,
             ((self.width - text_width) / 2, (self.height - text_height) / 2)
         )
 
-    def on_mouse_move(self, mouse_x, mouse_y):
-        """Method called when the mouse is moved,
-        to update the appearance of the button."""
+        # Hover surface of the button (hover effect)
+        self.hover_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        self.hover_surface.fill(UI_HOVER_COLOR)
+        self.hover_surface.set_alpha(UI_HOVER_ALPHA_VALUE)
 
-        self.hovered = self.collides(mouse_x, mouse_y)
+        # Final image of the button, clear for now
+        self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
 
-    def draw(self, screen):
-        """Method used to draw the button on the screen, at the right coordinates"""
-
-        # We blit on the screen the basic appearance of the button
-        screen.blit(
-            self.image,
-            (self.x_value, self.y_value)
-        )
-
-        # If the button is hovered, then we have to add a thin white layer
-        if self.hovered:
-            # Configuration of the layer displayed iver the button
-            hover_surface = pygame.Surface((self.width, self.height), pygame.SRCALPHA)
-            hover_surface.fill(UI_HOVER_COLOR)
-            hover_surface.set_alpha(UI_HOVER_ALPHA_VALUE)
-
-            # Then we blit this surface on the button
-            screen.blit(
-                hover_surface,
-                (self.x_value, self.y_value)
-            )
-
-    def collides(self, mouse_x, mouse_y):
+    def collides(self, mouse_coords):
         """Method which determines if the coordinates of the click
         passed in parameters are contained in the button."""
 
-        in_x_range = self.x_value <= mouse_x <= (self.x_value + self.width)
-        in_y_range = self.y_value <= mouse_y <= (self.y_value + self.height)
+        in_x_range = self.x_value <= mouse_coords[0] <= (self.x_value + self.width)
+        in_y_range = self.y_value <= mouse_coords[1] <= (self.y_value + self.height)
 
         return in_x_range and in_y_range
+
+    def update(self, mouse_coords):
+        """Method called when the mouse is moved,
+        to update the appearance of the button."""
+
+        # We display the basic image of the button
+        self.image.blit(self.image_base, (0, 0))
+
+        # If the button is hovered, then we also display the hover layer
+        if self.collides(mouse_coords):
+            self.image.blit(self.hover_surface, (0, 0))
