@@ -5,7 +5,8 @@ such the Button and the Input class.
 
 import pygame
 from constants import (UI_FONT_PATH, UI_TEXT_COLOR, UI_BACKGROUND_COLOR,
-                       UI_TEXT_PROPORTION, UI_HOVER_COLOR, UI_HOVER_ALPHA_VALUE)
+                       UI_TEXT_PROPORTION, UI_HOVER_COLOR, UI_HOVER_ALPHA_VALUE,
+                       UI_BUTTON_CHECK_PATH, UI_BUTTON_CHECK_SIZE)
 
 
 class ImageSprite(pygame.sprite.Sprite):
@@ -34,6 +35,13 @@ class Button(pygame.sprite.Sprite):
         # Call to the parent constructor
         pygame.sprite.Sprite.__init__(self)
 
+        # Attribute saving if the button is checked
+        self.checked = False
+
+        # Button check icon
+        self.check_icon = pygame.image.load(
+            UI_BUTTON_CHECK_PATH).convert_alpha()
+
         # Rect (coordinates and dimensions) of the button
         self.rect = rect
 
@@ -47,18 +55,18 @@ class Button(pygame.sprite.Sprite):
         self.hover_surface.set_alpha(UI_HOVER_ALPHA_VALUE)
 
         # Final image of the button, clear for now
-        self.image = pygame.Surface(self.rect.size, pygame.SRCALPHA)
+        # We add some pixels in case we want to add the button-check icon
+        self.image = pygame.Surface(
+            (self.rect.width + UI_BUTTON_CHECK_SIZE[0] // 2,
+             self.rect.height + UI_BUTTON_CHECK_SIZE[1] // 2),
+            pygame.SRCALPHA
+        )
 
     def collides(self, mouse_coords):
         """Method which determines if the coordinates of the click
         passed in parameters are contained in the button."""
 
-        in_x_range = self.rect.x <= mouse_coords[0] <= (
-            self.rect.x + self.rect.width)
-        in_y_range = self.rect.y <= mouse_coords[1] <= (
-            self.rect.y + self.rect.height)
-
-        return in_x_range and in_y_range
+        return self.rect.collidepoint(mouse_coords[0], mouse_coords[1])
 
     def update(self, mouse_coords):
         """Method called when the mouse is moved,
@@ -70,6 +78,14 @@ class Button(pygame.sprite.Sprite):
         # If the button is hovered, then we also display the hover layer
         if self.collides(mouse_coords):
             self.image.blit(self.hover_surface, (0, 0))
+
+        # If the button is checked, then we display the button-check icon
+        if self.checked:
+            self.image.blit(
+                self.check_icon,
+                (self.rect.width - UI_BUTTON_CHECK_SIZE[0] // 2,
+                 self.rect.height - UI_BUTTON_CHECK_SIZE[1] // 2)
+            )
 
 
 class TextButton(Button):

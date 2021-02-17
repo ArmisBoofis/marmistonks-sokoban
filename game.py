@@ -392,6 +392,7 @@ class GameManager():
             ),
             'Refaire'
         )
+        self.clear_button.checked = True
 
         self.back_button = TextButton(
             pygame.Rect(
