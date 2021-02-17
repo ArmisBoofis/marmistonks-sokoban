@@ -98,13 +98,12 @@ MANUAL_VIEW = 4 # View set when the manual is displayed
 MENU_BACKGROUND_COLOR = (133, 0, 24) # Background color
 
 # Margin applied around the different buttons
-MENU_BUTTONS_Y_MARGIN = 25
-
-# Size of the buttons
-MENU_BUTTONS_WIDTH = 425
-MENU_BUTTONS_HEIGHT = 50
+MENU_BUTTONS_MARGIN = 25
 
 ########################### Main Menu ##############################
+
+# Size of the buttons
+MAIN_MENU_BUTTONS_SIZE = (425, 50)
 
 # Initial y value of the different buttons
 MAIN_MENU_BUTTONS_Y = 225
@@ -117,11 +116,13 @@ MAIN_MENU_BUTTONS = [
     ("Mode d'emploi", GAME_VIEW)
 ]
 
-# Paths to the different images displayed in the main menu
-MAIN_MENU_LOGO_PATH = 'sprites/main_menu/mario_sokoban_logo.png'
-MAIN_MENU_CIRCLE_ENIX_PATH = 'sprites/main_menu/circle_enix.png'
-MAIN_MENU_FROM_HARDWARE_PATH = 'sprites/main_menu/from_hardware.png'
-MAIN_MENU_JAZZ_STAR_PATH = 'sprites/main_menu/jazz_star.png'
+# Paths to the different images displayed in the main menu, and their coordinates
+MAIN_MENU_SPRITES = [
+    ('sprites/main_menu/mario_sokoban_logo.png', (143, 55)),
+    ('sprites/main_menu/circle_enix.png', (245, 554.5)),
+    ('sprites/main_menu/from_hardware.png', (50, 552)),
+    ('sprites/main_menu/jazz_star.png', (440, 555))
+]
 
 ######################### User Interface ###########################
 

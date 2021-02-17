@@ -7,47 +7,39 @@ import pygame
 from constants import (UI_FONT_PATH, UI_TEXT_COLOR, UI_BACKGROUND_COLOR,
                        UI_TEXT_PROPORTION, UI_HOVER_COLOR, UI_HOVER_ALPHA_VALUE)
 
+
+class ImageSprite(pygame.sprite.Sprite):
+    """Class creating a pygame sprite from an image and its coordinates"""
+
+    def __init__(self, image_path, coords):
+        """Constructor method. It initializes the image and then the sprite."""
+
+        # Call to the parent constructor
+        pygame.sprite.Sprite.__init__(self)
+
+        # We load the image
+        self.image = pygame.image.load(image_path).convert_alpha()
+
+        # We define a rect for the sprite
+        self.rect = pygame.Rect(coords, self.image.get_size())
+
+
 class Button(pygame.sprite.Sprite):
     """Class defining a button"""
 
-    def __init__(self, x, y, width, height, text):
-        """Constructor method. <x> and <y> are the coordinates
-        of the button, and <text> the text displayed in it."""
+    def __init__(self, rect):
+        """Constructor method. <rect> describes the coordinates and
+        dimensions of the button."""
 
         # Call to the parent constructor
         pygame.sprite.Sprite.__init__(self)
 
         # Rect (coordinates and dimensions) of the button
-        self.rect = pygame.Rect(x, y, width, height)
-
-        # Font used to display the text (we make the text slighlty smaller than the button)
-        text_font = pygame.font.Font(UI_FONT_PATH, int(self.rect.height * UI_TEXT_PROPORTION))
-
-        # Size of the rendered text
-        (text_width, text_height) = text_font.size(text)
-
-        # Image of the text, represented by a Surface object
-        text_image = text_font.render(
-            text,
-            True,
-            UI_TEXT_COLOR
-        )
+        self.rect = rect
 
         # Basic image of the button (without the hover effect)
         self.image_base = pygame.Surface(self.rect.size, pygame.SRCALPHA)
-
-        # We first draw the background rectangle on it
-        pygame.draw.rect(
-            self.image_base,
-            UI_BACKGROUND_COLOR,
-            pygame.Rect(0, 0, self.width, self.height)
-        )
-
-        # Finally, we blit the text on the image of the button
-        self.image_base.blit(
-            text_image,
-            ((self.width - text_width) / 2, (self.height - text_height) / 2)
-        )
+        self.image_base.fill(UI_BACKGROUND_COLOR)
 
         # Hover surface of the button (hover effect)
         self.hover_surface = pygame.Surface(self.rect.size, pygame.SRCALPHA)
@@ -61,8 +53,10 @@ class Button(pygame.sprite.Sprite):
         """Method which determines if the coordinates of the click
         passed in parameters are contained in the button."""
 
-        in_x_range = self.x_value <= mouse_coords[0] <= (self.x_value + self.width)
-        in_y_range = self.y_value <= mouse_coords[1] <= (self.y_value + self.height)
+        in_x_range = self.rect.x <= mouse_coords[0] <= (
+            self.rect.x + self.rect.width)
+        in_y_range = self.rect.y <= mouse_coords[1] <= (
+            self.rect.y + self.rect.height)
 
         return in_x_range and in_y_range
 
@@ -76,3 +70,56 @@ class Button(pygame.sprite.Sprite):
         # If the button is hovered, then we also display the hover layer
         if self.collides(mouse_coords):
             self.image.blit(self.hover_surface, (0, 0))
+
+
+class TextButton(Button):
+    """Class defining a button with text in it."""
+
+    def __init__(self, rect, text):
+        """Constructor method. <text> is a string
+        representing the text displayed in the button.."""
+
+        # Call to the parent constructor
+        Button.__init__(self, rect)
+
+        # Font used to display the text (we make the text slighlty smaller than the button)
+        text_font = pygame.font.Font(UI_FONT_PATH, int(
+            self.rect.height * UI_TEXT_PROPORTION))
+
+        # Size of the rendered text
+        (text_width, text_height) = text_font.size(text)
+
+        # Image of the text, represented by a Surface object
+        text_image = text_font.render(
+            text,
+            True,
+            UI_TEXT_COLOR
+        )
+
+        # Finally, we blit the text on the image of the button
+        self.image_base.blit(
+            text_image,
+            ((self.rect.width - text_width) / 2,
+             (self.rect.height - text_height) / 2)
+        )
+
+
+class ImageButton(Button):
+    """Class defining a button with an image in it."""
+
+    def __init__(self, rect, image_path):
+        """Constructor method, loading the image and displaying it."""
+
+        # Call to the parent constructor
+        Button.__init__(self, rect)
+
+        # First, we load the image
+        image = pygame.image.load(image_path).convert_alpha()
+        (image_width, image_height) = image.get_size()
+
+        # Then, we blit it on the button image, centering it
+        self.image_base.blit(
+            image,
+            ((self.rect.width - image_width) / 2,
+             (self.rect.height - image_height) / 2)
+        )

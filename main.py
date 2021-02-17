@@ -6,7 +6,7 @@ level editor, the game itself...)
 
 import pygame
 from game import GameManager
-from main_menu import MainMenuManager
+from menu import MenuManager, get_main_menu_elements
 from constants import WINDOW_SIZE, WINDOW_TITLE, WINDOW_ICON_PATH, GAME_VIEW, MAIN_MENU_VIEW
 
 if __name__ == '__main__':
@@ -20,8 +20,12 @@ if __name__ == '__main__':
     # Currently displayed view
     view = MAIN_MENU_VIEW
 
-    main_menu = MainMenuManager(screen) # Initialization of the main menu
-    game = GameManager(screen) # Initialization of the game
+    # Initialization of the main menu
+    (main_menu_buttons, main_menu_sprites) = get_main_menu_elements()
+    main_menu = MenuManager(screen, main_menu_buttons, main_menu_sprites)
+
+    # Initialisation of the game
+    game = GameManager(screen)
 
     # Main loop
     while True:
