@@ -101,6 +101,12 @@ MENU_BACKGROUND_COLOR = (133, 0, 24)  # Background color
 # Margin applied around the different buttons
 MENU_BUTTONS_MARGIN = 25
 
+# Text displayed on the button which leads back to the main menu
+MENU_BACK_BUTTON_TEXT = 'Retour au menu principal'
+
+# Size of the button which leads back to the main menu
+MENU_BACK_BUTTON_SIZE = (425, 50)
+
 ########################### Main Menu ##############################
 
 # Size of the buttons
@@ -132,6 +138,12 @@ LEVEL_MENU_BUTTONS_SIZE = (100, 100)
 
 # Path to the directory containing the level files
 LEVEL_MENU_LEVELS_PATH = 'levels'
+
+# Title displayed at the top of the menu
+LEVEL_MENU_TITLE = 'Choix du niveau :'
+
+# Top margin before the buttons
+LEVEL_MENU_TOP_MARGIN = 250
 
 ######################### User Interface ###########################
 

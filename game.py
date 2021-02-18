@@ -450,6 +450,9 @@ class GameManager():
         """The main loop of the game. It looks for the inputs
         of the user to move the elements of the game."""
 
+        # We update the buttons, so that they do not appear hovered
+        self.buttons_group.update((0, 0))
+
         # List of the codes of the arrow keys
         arrow_keys = [pygame.K_LEFT, pygame.K_UP,
                       pygame.K_DOWN, pygame.K_RIGHT]
@@ -498,7 +501,7 @@ class GameManager():
 
                     # If the user clicks on the 'clear' button,
                     # we restart the level as it was initially
-                    elif self.clear_button.collides(mouse_position):
+                    if self.clear_button.collides(mouse_position):
                         # We clear the history of moves
                         self.move_queue.clear()
 
@@ -518,6 +521,19 @@ class GameManager():
                             self.background.initial_character_coords[0],
                             self.background.initial_character_coords[1]
                         )
+
+                    # If the user clicks on the 'back' button,
+                    # We quit the game
+                    if self.back_to_menu_button.collides(mouse_position):
+                        # We clear the crates
+                        self.crates_group.empty()
+                        self.crates.clear()
+
+                        # Then we clear the background and character groups
+                        self.background_group.empty()
+                        self.character_group.empty()
+
+                        return
 
             # Drawing the different components of the game
             self.background_group.draw(self.screen)

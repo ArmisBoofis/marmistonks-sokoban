@@ -119,6 +119,9 @@ class TextButton(Button):
              (self.rect.height - text_height) / 2)
         )
 
+        # We update the button, so that the image is filled
+        self.update((0, 0))
+
 
 class ImageButton(Button):
     """Class defining a button with an image in it."""
@@ -139,3 +142,6 @@ class ImageButton(Button):
             ((self.rect.width - image_width) / 2,
              (self.rect.height - image_height) / 2)
         )
+
+        # We update the button, so that the image is filled
+        self.update((0, 0))

@@ -41,10 +41,11 @@ if __name__ == '__main__':
             view = main_menu.mainloop()
 
         elif view == LEVEL_CHOICE_MENU_VIEW:
-            view = GAME_VIEW
-            next_level = level_menu.mainloop()
+            (view, next_level) = level_menu.mainloop()
 
         elif view == GAME_VIEW:
+            view = LEVEL_CHOICE_MENU_VIEW
+
             game.parse(next_level, 0)
             game.mainloop()
 
