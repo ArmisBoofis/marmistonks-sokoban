@@ -72,7 +72,7 @@ class BackgroundManager(pygame.sprite.Sprite):
         error = False
 
         # We open the level file to extract its data
-        with open('levels/{}'.format(filename), 'r') as level_file:
+        with open(filename, 'r') as level_file:
             for line in level_file:
                 # We first extract the codes of this line as a list of string objects
                 # The codes of the tiles are separated with comas
@@ -392,7 +392,6 @@ class GameManager():
             ),
             'Refaire'
         )
-        self.clear_button.checked = True
 
         self.back_button = TextButton(
             pygame.Rect(

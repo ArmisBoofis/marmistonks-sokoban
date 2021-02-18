@@ -89,9 +89,10 @@ GAME_BUTTONS_Y_MARGIN = 16
 
 GAME_VIEW = 0  # View set when the game is running
 MAIN_MENU_VIEW = 1  # View set when the main menu is displayed
-LEVEL_EDITOR_VIEW = 2  # View set when the level editor is running
-CHARACTER_CHOICE_VIEW = 3  # View set when the character choice menu is displayed
-MANUAL_VIEW = 4  # View set when the manual is displayed
+LEVEL_CHOICE_MENU_VIEW = 2  # View set when the level choice menu is displayed
+LEVEL_EDITOR_VIEW = 3  # View set when the level editor is running
+CHARACTER_CHOICE_VIEW = 4  # View set when the character choice menu is displayed
+MANUAL_VIEW = 5  # View set when the manual is displayed
 
 ############################## Menus ###############################
 
@@ -110,7 +111,7 @@ MAIN_MENU_BUTTONS_Y = 225
 
 # Buttons of the main menu and their corresponding view
 MAIN_MENU_BUTTONS = [
-    ('Jouer à Mario Sokoban', GAME_VIEW),
+    ('Jouer à Mario Sokoban', LEVEL_CHOICE_MENU_VIEW),
     ('Éditeur de niveaux', GAME_VIEW),
     ('Choix des personnages', GAME_VIEW),
     ("Mode d'emploi", GAME_VIEW)
@@ -123,6 +124,14 @@ MAIN_MENU_SPRITES = [
     ('sprites/main_menu/from_hardware.png', (50, 552)),
     ('sprites/main_menu/jazz_star.png', (440, 555))
 ]
+
+########################## Level Menu #############################
+
+# Size of the buttons
+LEVEL_MENU_BUTTONS_SIZE = (100, 100)
+
+# Path to the directory containing the level files
+LEVEL_MENU_LEVELS_PATH = 'levels'
 
 ######################### User Interface ###########################
 

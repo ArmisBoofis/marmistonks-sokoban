@@ -5,10 +5,12 @@ the levels, the characters...
 
 import sys
 import pygame
+from os import listdir
 from user_interface import ImageSprite, TextButton
 from constants import (WINDOW_SIZE, MENU_BACKGROUND_COLOR, MAIN_MENU_BUTTONS,
                        MAIN_MENU_BUTTONS_SIZE, MENU_BUTTONS_MARGIN,
-                       MAIN_MENU_BUTTONS_Y, MAIN_MENU_SPRITES)
+                       MAIN_MENU_BUTTONS_Y, MAIN_MENU_SPRITES, LEVEL_MENU_BUTTONS_SIZE,
+                       LEVEL_MENU_LEVELS_PATH)
 
 
 class MenuManager():
@@ -100,3 +102,34 @@ def get_main_menu_elements():
 
     # We return the diferent elements we have created
     return (main_menu_buttons, main_menu_sprites)
+
+########################### Level Menu #############################
+
+
+def get_level_menu_elements():
+    """Function returning the buttons
+    displayed in the level menu."""
+
+    # List of the files contained in the levels directory
+    # We sort it, so that the levels are in ascending order
+    levels_list = sorted(listdir(LEVEL_MENU_LEVELS_PATH))
+
+    # List of all the buttons of the level menu
+    level_menu_buttons = []
+    nb_horizontal_buttons = WINDOW_SIZE[0] // (
+        LEVEL_MENU_BUTTONS_SIZE[0] + MENU_BUTTONS_MARGIN)
+    x_value = (WINDOW_SIZE[0] - nb_horizontal_buttons *
+               (LEVEL_MENU_BUTTONS_SIZE[0] + MENU_BUTTONS_MARGIN) + MENU_BUTTONS_MARGIN) // 2
+
+    # For each file, we create a button
+    for index, level in enumerate(levels_list):
+        level_menu_buttons.append((TextButton(
+            pygame.Rect(
+                (x_value + (index % nb_horizontal_buttons * (LEVEL_MENU_BUTTONS_SIZE[0] + MENU_BUTTONS_MARGIN)),
+                 (index // nb_horizontal_buttons) * (LEVEL_MENU_BUTTONS_SIZE[1] + MENU_BUTTONS_MARGIN) + MENU_BUTTONS_MARGIN),
+                LEVEL_MENU_BUTTONS_SIZE
+            ),
+            str(index),
+        ), '{}/{}'.format(LEVEL_MENU_LEVELS_PATH, level)))
+
+    return level_menu_buttons
