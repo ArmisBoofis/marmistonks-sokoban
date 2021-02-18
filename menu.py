@@ -5,14 +5,17 @@ the levels, the characters...
 
 import sys
 from os import listdir
+
 import pygame
+
 from constants import (GAME_VIEW, LEVEL_MENU_BUTTONS_SIZE,
-                       LEVEL_MENU_LEVELS_PATH, LEVEL_MENU_TITLE,
-                       LEVEL_MENU_TOP_MARGIN, MAIN_MENU_BUTTONS,
-                       MAIN_MENU_BUTTONS_SIZE, MAIN_MENU_BUTTONS_Y,
-                       MAIN_MENU_SPRITES, MAIN_MENU_VIEW,
+                       LEVEL_MENU_LEVELS_PATH, LEVEL_MENU_TITLE_SIZE,
+                       LEVEL_MENU_TITLE_TEXT, LEVEL_MENU_TOP_MARGIN,
+                       MAIN_MENU_BUTTONS, MAIN_MENU_BUTTONS_SIZE,
+                       MAIN_MENU_BUTTONS_Y, MAIN_MENU_SPRITES, MAIN_MENU_VIEW,
                        MENU_BACK_BUTTON_SIZE, MENU_BACK_BUTTON_TEXT,
-                       MENU_BACKGROUND_COLOR, MENU_BUTTONS_MARGIN, WINDOW_SIZE)
+                       MENU_BACKGROUND_COLOR, MENU_BUTTONS_MARGIN,
+                       UI_FONT_PATH, UI_TEXT_COLOR, WINDOW_SIZE)
 from user_interface import ImageSprite, TextButton
 
 
@@ -132,7 +135,7 @@ def get_level_menu_elements():
         level_menu_buttons.append((TextButton(
             pygame.Rect(
                 (x_value + (index % nb_horizontal_buttons * (LEVEL_MENU_BUTTONS_SIZE[0] + MENU_BUTTONS_MARGIN)),
-                 (index // nb_horizontal_buttons) * (LEVEL_MENU_BUTTONS_SIZE[1] + MENU_BUTTONS_MARGIN) + MENU_BUTTONS_MARGIN),
+                 (index // nb_horizontal_buttons) * (LEVEL_MENU_BUTTONS_SIZE[1] + MENU_BUTTONS_MARGIN) + LEVEL_MENU_TOP_MARGIN),
                 LEVEL_MENU_BUTTONS_SIZE
             ),
             str(index + 1),
@@ -148,4 +151,22 @@ def get_level_menu_elements():
         MENU_BACK_BUTTON_TEXT
     ), (MAIN_MENU_VIEW, '')))
 
-    return level_menu_buttons
+    # We create the title image of the menu
+    title_font = pygame.font.Font(UI_FONT_PATH, LEVEL_MENU_TITLE_SIZE)
+
+    # Size of the rendered text
+    title_size = title_font.size(LEVEL_MENU_TITLE_TEXT)
+
+    # We intialize the sprite representing the title
+    title_sprite = pygame.sprite.Sprite()
+
+    title_sprite.rect = pygame.Rect(
+        ((WINDOW_SIZE[0] - title_size[0]) // 2,
+         (LEVEL_MENU_TOP_MARGIN - title_size[1]) // 2),
+        title_size
+    )
+
+    title_sprite.image = title_font.render(
+        LEVEL_MENU_TITLE_TEXT, True, UI_TEXT_COLOR)
+
+    return (level_menu_buttons, [title_sprite])

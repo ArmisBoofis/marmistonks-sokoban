@@ -28,8 +28,8 @@ if __name__ == '__main__':
     main_menu = MenuManager(screen, main_menu_buttons, main_menu_sprites)
 
     # Initialization of the levels menu
-    level_menu_buttons = get_level_menu_elements()
-    level_menu = MenuManager(screen, level_menu_buttons, [])
+    (level_menu_buttons, level_menu_sprites) = get_level_menu_elements()
+    level_menu = MenuManager(screen, level_menu_buttons, level_menu_sprites)
 
     # Initialisation of the game
     game = GameManager(screen)

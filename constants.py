@@ -140,10 +140,13 @@ LEVEL_MENU_BUTTONS_SIZE = (100, 100)
 LEVEL_MENU_LEVELS_PATH = 'levels'
 
 # Title displayed at the top of the menu
-LEVEL_MENU_TITLE = 'Choix du niveau :'
+LEVEL_MENU_TITLE_TEXT = 'Choix du niveau :'
+
+# Size of the title of the level choice menu
+LEVEL_MENU_TITLE_SIZE = 35
 
 # Top margin before the buttons
-LEVEL_MENU_TOP_MARGIN = 250
+LEVEL_MENU_TOP_MARGIN = 125
 
 ######################### User Interface ###########################
 
